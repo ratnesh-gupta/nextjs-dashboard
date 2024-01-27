@@ -56,7 +56,6 @@ async function seedUsers(client) {
   }
 }
 
-
 async function seedCustomers(client) {
   try {
   // Create the "users" table if it doesn't exist
@@ -71,7 +70,6 @@ async function seedCustomers(client) {
         deleted_at TIMESTAMP NULL
       );`
     );
-    console.log(createTable.err);
   console.log(`Created "customers" table`);
 
   // Insert data into the "customers" table
@@ -93,6 +91,60 @@ async function seedCustomers(client) {
     throw error;
   }
 }
+
+async function seedInvoices(client) {
+  try {
+    // Create the "invoices" table if it doesn't exist
+    const createTable = await client.query(
+      `CREATE TABLE IF NOT EXISTS invoices (
+        id varchar(36) PRIMARY KEY,
+        customer_id varchar(36) NOT NULL,
+        amount INT NOT NULL,
+        status VARCHAR(255) NOT NULL,
+        date DATE NOT NULL,
+        created_at TIMESTAMP NOT NULL, 
+        updated_at TIMESTAMP NOT NULL, 
+        deleted_at TIMESTAMP NULL
+      );`
+    );
+    console.log(`Created "invoices" table`);
+
+    const insertedInvoices = await Promise.all(
+      invoices.map(async (invoice) => {
+        let query = `INSERT INTO invoices (id,customer_id, amount, status, date, created_at, updated_at) VALUES (uuid(),'${invoice.customer_id}', '${invoice.amount}', '${invoice.status}', '${invoice.date}', now(), now());`
+        console.log(query);
+        return client.query(query);
+      }),
+    );
+
+    console.log(`Seeded ${insertedInvoices.length} invoices`);
+
+    return {
+      createTable,
+      invoices: insertedInvoices,
+    };
+  } catch (error) {
+    console.error('Error seeding invoices:', error);
+    throw error;
+  }
+}
+
+async function seedRevenue(client) {
+  try {
+    // Create the "revenue" table if it doesn't exist
+    const createTable = await client.query(
+      `CREATE TABLE IF NOT EXISTS revenue (
+          month VARCHAR(4) NOT NULL UNIQUE,
+          revenue INT NOT NULL
+        );`
+      );
+
+  } catch (error) {
+    console.error('Error seeding revenue:', error);
+    throw error;
+  }
+}
+
 async function main() {
   // Connect to your MySQL instance first
   await mysql.connect();
@@ -102,7 +154,9 @@ async function main() {
 
   //await seedUsers(client);
   //await seedCustomers(client);
-  
+  await seedInvoices(client);
+  await seedRevenue(client);
+
   // Run clean up function
   await mysql.quit();
 }
