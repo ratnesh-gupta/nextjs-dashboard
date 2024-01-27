@@ -29,14 +29,7 @@ export default function Page() {
           </Link>
         </div>
         <div className="flex items-center justify-center p-6 md:w-3/5 md:px-28 md:py-12">
-          {/* Add Hero Images Here for desktop */}
-          <Image
-            src="/hero-desktop.png"
-            width={1000}
-            height={760}
-            className="hidden md:block"
-            alt="Screenshots of the dashboard project showing desktop version"
-          />
+          
 
           {/* Add Hero Images Here for mobile */}
           <Image
@@ -45,6 +38,7 @@ export default function Page() {
             height={620}
             className="block md:block"
             alt="Screenshots of the dashboard project showing desktop version"
+            priority
           />
         </div>
       </div>

@@ -4,7 +4,7 @@ services:
 
   mysql-db:
     container_name:  mysql-db
-    image: mysql:5.7
+    image: mysql:8.2
     command: --default-authentication-plugin=mysql_native_password
     restart: unless-stopped
     env_file: ./.env
@@ -13,19 +13,34 @@ services:
     ports:
       - $MYSQLDB_LOCAL_PORT:$MYSQLDB_DOCKER_PORT
     volumes:
-      - mysql-db:/var/lib/mysql:rw
-      - ./mysql-db:/docker-entrypoint-initdb.d/
+      - mysqldb:/var/lib/mysql:rw
+      - ./mysqldb:/docker-entrypoint-initdb.d/
     networks:
-      - app
+      - default
 
-
+  dashboard:
+    container_name: dashboard
+    # depends_on: 
+      # - nestjs-app
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: ./.env
+    ports:
+      - $NEXTJS_APP_LOCAL_PORT:$NEXTJS_APP_DOCKER_PORT
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./dashboard:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - default
 
 networks:
-  app:
+  default:
     driver: bridge
 
 volumes:
-  mysql-db:
-    driver: local
-  appredis:
-    driver: local
+  mysqldb: {}
