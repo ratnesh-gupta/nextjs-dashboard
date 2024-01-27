@@ -112,7 +112,6 @@ async function seedInvoices(client) {
     const insertedInvoices = await Promise.all(
       invoices.map(async (invoice) => {
         let query = `INSERT INTO invoices (id,customer_id, amount, status, date, created_at, updated_at) VALUES (uuid(),'${invoice.customer_id}', '${invoice.amount}', '${invoice.status}', '${invoice.date}', now(), now());`
-        console.log(query);
         return client.query(query);
       }),
     );
@@ -138,6 +137,21 @@ async function seedRevenue(client) {
           revenue INT NOT NULL
         );`
       );
+    console.log(`Created "revenue" table`);
+
+    // Insert data into the "revenue" table
+    const insertedRevenue = await Promise.all(
+      revenue.map(async (rev) => {
+        let query = `INSERT INTO revenue (month, revenue) VALUES ('${rev.month}', '${rev.revenue}')`;
+        return client.query(query);
+      }),
+    );
+
+    console.log(`Seeded ${insertedRevenue.length} revenue`);
+    return {
+      createTable,
+      revenue: insertedRevenue,
+    };
 
   } catch (error) {
     console.error('Error seeding revenue:', error);
@@ -152,8 +166,8 @@ async function main() {
   // Get the connection object
   let client = mysql.getClient()
 
-  //await seedUsers(client);
-  //await seedCustomers(client);
+  await seedUsers(client);
+  await seedCustomers(client);
   await seedInvoices(client);
   await seedRevenue(client);
 
